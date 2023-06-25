@@ -6,12 +6,13 @@ SCOPE = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive.file",
     "https://www.googleapis.com/auth/drive"
-    ]
+]
 
 CREDS = Credentials.from_service_account_file('creds.json')
 SCOPED_CREDS = CREDS.with_scopes(SCOPE)
 GSPREAD_CLIENT = gspread.authorize(SCOPED_CREDS)
 SHEET = GSPREAD_CLIENT.open('love_sandwiches')
+
 
 def get_sales_data():
     """
@@ -26,13 +27,14 @@ def get_sales_data():
         print('Example: 10,20,30,40,50,60\n')
 
         data_str = input('Enter your data here:')
-        
+
         sales_data = data_str.split(',')
         validate_data(sales_data)
         if validate_data(sales_data):
             print('Data is valid!')
             break
     return sales_data
+
 
 def validate_data(values):
     """
@@ -73,6 +75,7 @@ def validate_data(values):
 #     surplus_worksheet.append_row(data)
 #     print('Update surplus worksheet successfully... \n')
 
+
 def update_worksheet(data, worksheet):
     """
     Update surplus worksheet with the surplus of (stock - sales) and add new row
@@ -82,6 +85,7 @@ def update_worksheet(data, worksheet):
     worksheet_to_update = SHEET.worksheet(worksheet)
     worksheet_to_update.append_row(data)
     print(f'Update {worksheet} worksheet successfully... \n')
+
 
 def calculate_surplus_data(sales_row):
     """
@@ -105,6 +109,22 @@ def calculate_surplus_data(sales_row):
     return surplus_data
 
 
+def get_last_5_entries_sales():
+    """
+    collects columns of data from sales worksheet, collecting 
+    the last 5 entries for each sandwich and returns the data 
+    as list of lists.
+    """
+
+    sales = SHEET.worksheet('sales')
+    # column = sales.col_values(3)
+    # print(column)
+    columns = []
+    for ind in range(1, 7,):
+        column = sales.col_values(ind)#col_values is a method from gspread worksheet
+        columns.append(column[-5:])# [-5:] slice the last 5 items of the columns
+    return columns
+
 
 def main():
     """
@@ -116,6 +136,9 @@ def main():
     new_surplus_data = calculate_surplus_data(sales_data)
     update_worksheet(new_surplus_data, 'surplus')
     print(new_surplus_data)
+    
+
 
 print('Welcome to Love Sandwiches Data Automation.\n')
-main()
+# main()
+sales_columns = get_last_5_entries_sales()
